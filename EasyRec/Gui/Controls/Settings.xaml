@@ -1,0 +1,77 @@
+﻿<UserControl x:Class="EasyRec.Gui.Controls.Settings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:EasyRec.Gui.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="560.277" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical">
+            <GroupBox Header="Buffer" Margin="2">
+                <StackPanel Orientation="Vertical">
+                    <Label Content="Save Path" Target="{Binding ElementName=bufferPath}"/>
+                    <local:PathChooser x:Name="bufferPath"/>
+                    
+                    <Label Content="Save Pattern" Target="{Binding ElementName=bufferPattern}"/>
+                    <TextBox x:Name="bufferPattern"/>
+
+                    <Label Content="Length (Seconds)" Target="{Binding ElementName=bufferPattern}"/>
+                    <TextBox x:Name="bufferLength" PreviewTextInput="NumberPreviewTextInput" TextChanged="CriticalTextChanged"/>
+
+                    <Label Content="File Type" Target="{Binding ElementName=bufferWriter}"/>
+                    <ComboBox x:Name="bufferWriter">
+                        <ComboBoxItem Tag="0" Content="AAC"/>
+                        <ComboBoxItem Tag="1" Content="MP3"/>
+                        <ComboBoxItem Tag="2" Content="WAV"/>
+                    </ComboBox>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Recording" Margin="2">
+                <StackPanel Orientation="Vertical">
+                    <Label Content="Save Path" Target="{Binding ElementName=recordPath}"/>
+                    <local:PathChooser x:Name="recordPath" TextChanged="CriticalTextChanged"/>
+                    
+                    <Label Content="Save Pattern" Target="{Binding ElementName=recordPattern}"/>
+                    <TextBox x:Name="recordPattern" TextChanged="RecordTextChanged"/>
+
+                    <Label Content="File Type" Target="{Binding ElementName=recordWriter}"/>
+                    <ComboBox x:Name="recordWriter" SelectionChanged="RecordSelectionChanged">
+                        <ComboBoxItem Tag="0" Content="AAC"/>
+                        <ComboBoxItem Tag="1" Content="MP3"/>
+                        <ComboBoxItem Tag="2" Content="WAV"/>
+                    </ComboBox>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="General" Margin="2">
+                <StackPanel Orientation="Vertical">
+                    <Label Content="Record Mixdown?" ToolTip="A Mixdown combines all inputs into one File." Target="{Binding ElementName=recordrWriter}"/>
+                    <ComboBox x:Name="mixdownType" SelectionChanged="CriticalSelectionChanged">
+                        <ComboBoxItem Tag="0" Content="No Mixdown"/>
+                        <ComboBoxItem Tag="1" Content="Only record Mixdown"/>
+                        <ComboBoxItem Tag="2" Content="Record both original and Mixdown"/>
+                    </ComboBox>
+
+                    <CheckBox x:Name="bufferOnStart" Content="Start Buffer on app start"/>
+                    <CheckBox x:Name="recordOnStart" Content="Start Recording on app start"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+        <GroupBox Header="Inputs" Grid.Column="1" Margin="2">
+            <ListBox x:Name="inputListBox"/>
+        </GroupBox>
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="saveButton" Content="Save and Apply" Margin="4" Click="saveButton_Click"/>
+            <Button x:Name="cancelButton" Content="Cancel" Margin="4" Click="cancelButton_Click"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

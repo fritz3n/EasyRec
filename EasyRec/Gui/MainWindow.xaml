@@ -1,0 +1,42 @@
+<Window x:Class="EasyRec.Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:EasyRec.Gui.Controls"
+        xmlns:local="clr-namespace:EasyRec.Gui"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="597" Width="800">
+    <Grid>
+        <TabControl>
+            <TabItem Header="Controls" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <GroupBox Header="Buffer" Grid.Column = "0">
+                        <StackPanel Orientation="Vertical">
+                            <Button Name="bufferButton" Margin="2" Click="bufferButton_Click">Starting...</Button>
+                            <Button Name="bufferSaveButton" IsEnabled="false" Margin="2" Click="bufferSaveButton_Click">Save Buffer</Button>
+                            <Label Name="bufferLabel" Margin="2">Buffer time: 0:00</Label>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="Recorder" Grid.Column = "1">
+                        <StackPanel Orientation="Vertical">
+                            <Button Name="recorderButton" Margin="2" Click="recorderButton_Click">Starting...</Button>
+                            <Label Name="recordedLabel" Margin="2">Recorded time: 0:00s</Label>
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            
+            <TabItem Header="Settings">
+                <controls:Settings x:Name="settingsControl"/>
+            </TabItem>
+            <TabItem Header="Hotkeys">
+                <controls:HotkeySettings x:Name="hotkeySettingsControl"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
