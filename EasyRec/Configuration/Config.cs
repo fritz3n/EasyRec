@@ -8,6 +8,8 @@ namespace EasyRec.Configuration
 {
 	class Config
 	{
+		private List<HotkeyConfig> hotkeys;
+
 		public string BufferPath { get; set; }
 		public string RecordPath { get; set; }
 		public string BufferPattern { get; set; }
@@ -26,6 +28,6 @@ namespace EasyRec.Configuration
 		public bool BufferOnStart { get; set; }
 		public bool RecordOnStart { get; set; }
 
-		public List<HotkeyConfig> Hotkeys { get; set; }
+		public List<HotkeyConfig> Hotkeys { get => hotkeys ?? new List<HotkeyConfig>(); set => hotkeys = value ?? new List<HotkeyConfig>(); }
 	}
 }

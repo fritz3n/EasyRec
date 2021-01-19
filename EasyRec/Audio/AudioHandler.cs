@@ -21,6 +21,11 @@ namespace EasyRec.Audio
 		private FileWriter recorder;
 		private SamplePusher pusher;
 		private ThroughputDescription description;
+		private WaveMixdown mixdown = null;
+
+		public float Volume => mixdown?.Volume ?? 0;
+
+		public bool VolumeActive { get => mixdown?.VolumeActive ?? false; set { if (mixdown is not null) mixdown.VolumeActive = value; } }
 
 		public TimeSpan RecordedTime => recorder?.RecordedTime ?? TimeSpan.Zero;
 		public TimeSpan BufferedTime => buffer?.BufferedTime ?? TimeSpan.Zero;
@@ -41,12 +46,17 @@ namespace EasyRec.Audio
 			if (config.Inputs.Length == 0)
 				throw new PipelineBuildException("No Inputs in Config");
 
-			List<WasapiProvider> inputList = new List<WasapiProvider>();
+			var inputList = new List<WasapiProvider>();
 			inputs = new WasapiProvider[config.Inputs.Length];
 			foreach (string input in config.Inputs)
 			{
-				inputList.Add(new WasapiProvider(input));
+				try
+				{
+					inputList.Add(new WasapiProvider(input));
+				}
+				catch (KeyNotFoundException) { } // Ignore devices which were not found
 			}
+
 
 			// Remove Providers with duplicate Names. Can happen if default ins/outs overlap with chosen ins/outs.
 			foreach (WasapiProvider input in inputList.GroupBy(i => i.Name).Where(g => g.Count() > 1).SelectMany(g => g.Skip(1)))
@@ -57,15 +67,15 @@ namespace EasyRec.Audio
 
 			inputs = inputList.ToArray();
 
-			WaveFormat targetFormat = new WaveFormat(config.SampleRate, config.Bits, 2);
+			var targetFormat = new WaveFormat(config.SampleRate, config.Bits, 2);
 
-			WaveConverter converter = new WaveConverter(inputs.Select(i => i.AudioStream), targetFormat);
+			var converter = new WaveConverter(inputs.Select(i => i.AudioStream), targetFormat);
 			List<AudioStream> streams;
 
 			if (config.MixdownType == MixdownType.OnlyOriginal)
 				streams = converter.AudioStreams;
 			else
-				streams = new WaveMixdown(converter.AudioStreams, config.MixdownType == MixdownType.Both).AudioStreams;
+				streams = (mixdown = new WaveMixdown(converter.AudioStreams, config.MixdownType == MixdownType.Both)).AudioStreams;
 
 			description = ThroughputDescription.FromStreams(streams);
 			pusher = new SamplePusher(streams, new List<ISampleReceiver>());
@@ -127,7 +137,7 @@ namespace EasyRec.Audio
 
 			Config conf = ConfigHandler.Config;
 			string path = Path.Combine(conf.BufferPath, PathFormatter.Format(conf.BufferPattern));
-			FileWriter writer = FileWriter.GetFileWriter(conf.BufferWriter, path, description);
+			var writer = FileWriter.GetFileWriter(conf.BufferWriter, path, description);
 			List<AudioFragment> fragments = buffer.ReadContents();
 			await writer.WriteIncremental(fragments);
 			TimeSpan span = writer.RecordedTime;

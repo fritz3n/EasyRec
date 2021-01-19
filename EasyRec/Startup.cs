@@ -24,10 +24,15 @@ namespace EasyRec
 		private ToolStripMenuItem bufferItem;
 		private ToolStripMenuItem recordItem;
 		public event EventHandler OnStateChanged;
+
+		public float Volume => audioHandler.Volume;
+
+		public bool VolumeActive { get => audioHandler.VolumeActive; set => audioHandler.VolumeActive = value; }
 		public bool Buffering => audioHandler.Buffering;
 		public bool Recording => audioHandler.Recording;
 		public TimeSpan RecordedTime => audioHandler.RecordedTime;
 		public TimeSpan BufferedTime => audioHandler.BufferedTime;
+
 
 		public HotkeyHandler HotkeyHandler { get; }
 
@@ -35,8 +40,10 @@ namespace EasyRec
 		{
 			this.mainWindow = mainWindow;
 
+			AppDomain currentDomain = AppDomain.CurrentDomain;
+			currentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-			Assembly assembly = Assembly.GetExecutingAssembly();
+			var assembly = Assembly.GetExecutingAssembly();
 			string resourceName = "EasyRec.Resources.easyrec.ico";
 
 			using Stream stream = assembly.GetManifestResourceStream(resourceName);
@@ -46,15 +53,15 @@ namespace EasyRec
 
 			notifyIcon.ContextMenuStrip = new ContextMenuStrip();
 
-			ToolStripMenuItem settingsItem = new ToolStripMenuItem("Settings");
+			var settingsItem = new ToolStripMenuItem("Settings");
 			settingsItem.Click += SettingsItem_Click;
 			notifyIcon.ContextMenuStrip.Items.Add(settingsItem);
 
-			ToolStripMenuItem restartItem = new ToolStripMenuItem("Restart Audio");
+			var restartItem = new ToolStripMenuItem("Restart Audio");
 			restartItem.Click += RestartItem_Click;
 			notifyIcon.ContextMenuStrip.Items.Add(restartItem);
 
-			ToolStripMenuItem saveBufferItem = new ToolStripMenuItem("Save Buffer");
+			var saveBufferItem = new ToolStripMenuItem("Save Buffer");
 			saveBufferItem.Click += SaveBufferItem_Click;
 			notifyIcon.ContextMenuStrip.Items.Add(saveBufferItem);
 
@@ -73,7 +80,7 @@ namespace EasyRec
 			;
 			notifyIcon.ContextMenuStrip.Items.Add(recordItem);
 
-			ToolStripMenuItem exitItem = new ToolStripMenuItem("Exit");
+			var exitItem = new ToolStripMenuItem("Exit");
 			exitItem.Click += ExitItem_Click;
 			notifyIcon.ContextMenuStrip.Items.Add(exitItem);
 
@@ -81,6 +88,12 @@ namespace EasyRec
 
 			HotkeyHandler = new HotkeyHandler(this);
 			HotkeyHandler.Initialize();
+		}
+
+		private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			if (e.IsTerminating)
+				MessageBox.Show(e.ExceptionObject.ToString());
 		}
 
 		private async void RestartItem_Click(object sender, EventArgs e) => await RebuildAudio();
@@ -187,14 +200,27 @@ namespace EasyRec
 		private void StartAudio(bool first = false)
 		{
 			UpdateLabels(true);
-
-			audioHandler.BuildPipeline();
-			if (first)
+			if (!first)
 			{
+				bool recording = audioHandler.Recording;
+				bool buffering = audioHandler.Buffering;
+				audioHandler.BuildPipeline();
+
+				SetBuffering(buffering);
+				SetRecording(recording);
+			}
+			else
+			{
+				if (Environment.GetCommandLineArgs().Length > 1 && Environment.GetCommandLineArgs()[1] == "autostart")
+					Thread.Sleep(30 * 1000); // Delay 30s to guarantee that everything will work
+
+				audioHandler.BuildPipeline();
+
 				if (ConfigHandler.Config.BufferOnStart)
 					audioHandler.StartBuffer();
 				if (ConfigHandler.Config.RecordOnStart)
 					audioHandler.StartRecording();
+
 			}
 			StateChanged();
 		}

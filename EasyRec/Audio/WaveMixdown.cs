@@ -1,4 +1,5 @@
 ﻿using EasyRec.Audio.Conversion;
+using NAudio.Gui;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
@@ -11,6 +12,10 @@ namespace EasyRec.Audio
 	class WaveMixdown
 	{
 		public List<AudioStream> AudioStreams { get; private set; }
+		private VolumeMeterProvider volumeMeter;
+		public float Volume => volumeMeter.StreamVolume;
+
+		public bool VolumeActive { get => volumeMeter.Active; set => volumeMeter.Active = value; }
 
 		public WaveMixdown(IEnumerable<AudioStream> audioStreams, bool keepOriginals)
 		{
@@ -23,7 +28,7 @@ namespace EasyRec.Audio
 				AudioStreams = new List<AudioStream>();
 				foreach (AudioStream input in audioStreams)
 				{
-					WaveSplitter splitter = new WaveSplitter(input.WaveProvider, 2);
+					var splitter = new WaveSplitter(input.WaveProvider, 2);
 					inputs.Add(splitter.Splits[0].ToSampleProvider().ToStereo());
 					AudioStreams.Add(input.WithProvider(splitter.Splits[1]));
 				}
@@ -34,13 +39,19 @@ namespace EasyRec.Audio
 				inputs = audioStreams.Select(a => a.WaveProvider.ToSampleProvider().ToStereo()).ToList();
 			}
 
-			MixingSampleProvider mixer = new MixingSampleProvider(inputs);
-
-			IWaveProvider mixerProvider = mixer.ToWaveProvider16();
+			var mixer = new MixingSampleProvider(inputs);
+			volumeMeter = new VolumeMeterProvider(mixer)
+			{
+				Active = false
+			};
+			IWaveProvider mixerProvider;
 			int targetBits = audioStreams.First().WaveProvider.WaveFormat.BitsPerSample;
-			if (mixerProvider.WaveFormat.BitsPerSample != targetBits)
-				mixerProvider = new PCMConversionWaveProvider(mixerProvider.ToSampleProvider(), targetBits / 8);
 
+
+			if (targetBits != 16)
+				mixerProvider = new PCMConversionWaveProvider(volumeMeter, targetBits / 8);
+			else
+				mixerProvider = volumeMeter.ToWaveProvider16();
 
 			AudioStreams.Add(new AudioStream("Mixdown", mixerProvider));
 		}

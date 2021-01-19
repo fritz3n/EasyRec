@@ -39,6 +39,7 @@ namespace EasyRec.Gui
 		protected override void OnActivated(EventArgs e)
 		{
 			base.OnActivated(e);
+			application.VolumeActive = true;
 			labelTimer.Start();
 		}
 
@@ -49,6 +50,7 @@ namespace EasyRec.Gui
 		{
 			e.Cancel = true;
 			labelTimer.Stop();
+			application.VolumeActive = false;
 			Hide();
 		}
 
@@ -64,6 +66,8 @@ namespace EasyRec.Gui
 		{
 			bufferLabel.Content = "Buffer time: " + application.BufferedTime.ToString("m\\:ss");
 			recordedLabel.Content = "Recorded time: " + application.RecordedTime.ToString("m\\:ss");
+			volumeBar.Value = application.Volume * 100;
+			application.VolumeActive = true;
 		}
 
 		private void bufferButton_Click(object sender, RoutedEventArgs e) => application.SetBuffering(!application.Buffering);

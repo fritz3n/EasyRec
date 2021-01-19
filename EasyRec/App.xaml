@@ -4,6 +4,5 @@
              xmlns:local="clr-namespace:EasyRec"
              StartupUri="Gui\MainWindow.xaml">
     <Application.Resources>
-         
     </Application.Resources>
 </Application>

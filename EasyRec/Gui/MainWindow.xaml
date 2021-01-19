@@ -20,6 +20,9 @@
                             <Button Name="bufferButton" Margin="2" Click="bufferButton_Click">Starting...</Button>
                             <Button Name="bufferSaveButton" IsEnabled="false" Margin="2" Click="bufferSaveButton_Click">Save Buffer</Button>
                             <Label Name="bufferLabel" Margin="2">Buffer time: 0:00</Label>
+                            <Label>Volume:</Label>
+                            <ProgressBar Name="volumeBar" Height="20" Margin="10,0,10,0" Background="#FFE6E6E6" Value="90">
+                            </ProgressBar>
                         </StackPanel>
                     </GroupBox>
                     <GroupBox Header="Recorder" Grid.Column = "1">
@@ -30,7 +33,7 @@
                     </GroupBox>
                 </Grid>
             </TabItem>
-            
+
             <TabItem Header="Settings">
                 <controls:Settings x:Name="settingsControl"/>
             </TabItem>

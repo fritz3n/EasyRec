@@ -54,7 +54,7 @@
             </GroupBox>
             <GroupBox Header="General" Margin="2">
                 <StackPanel Orientation="Vertical">
-                    <Label Content="Record Mixdown?" ToolTip="A Mixdown combines all inputs into one File." Target="{Binding ElementName=recordrWriter}"/>
+                    <Label Content="Record Mixdown?" ToolTip="A Mixdown combines all inputs into one File." Target="{Binding ElementName=mixdownType}"/>
                     <ComboBox x:Name="mixdownType" SelectionChanged="CriticalSelectionChanged">
                         <ComboBoxItem Tag="0" Content="No Mixdown"/>
                         <ComboBoxItem Tag="1" Content="Only record Mixdown"/>
