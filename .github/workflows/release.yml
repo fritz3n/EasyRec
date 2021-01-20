@@ -15,16 +15,12 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Publish
-      run: dotnet publish -f net5.0-windows -o /publish/
+      run: dotnet publish -c Release -f net5.0-windows -o D:\publish\
     - name: Zip release
-      uses: papeloto/action-zip@v1
-      with:
-        files: D:\publish\
-        recursive: false  
-        dest: release.zip
+      run: powershell Compress-Archive -Path D:\publish\* -DestinationPath D:\release.zip
     - name: Create release  
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ github.run_number	}}
-        artifacts: "release.zip"
+        tag: ${{github.}}
+        artifacts: "D:\release.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
