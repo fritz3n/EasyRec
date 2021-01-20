@@ -1,7 +1,8 @@
 name: Build and release
 
 on:
-  workflow_dispatch:
+  release:
+    types: [created]
   
 jobs:
   build:
@@ -18,10 +19,18 @@ jobs:
       run: dotnet publish -c Release -f net5.0-windows -o D:\publish\
     - name: Zip release
       run: powershell Compress-Archive -Path D:\publish\* -DestinationPath D:\release.zip
-    - name: Create release  
-      uses: ncipollo/release-action@v1
+    - name: Get release
+      id: release
+      uses: bruceadams/get-release@v1.2.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Upload File
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag: ${{github.run_number}}
-        draft: true 
-        artifacts: "D:\\release.zip"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        upload_url: ${{ steps.release.outputs.upload_url }} 
+        asset_path: D:\release.zip
+        asset_name: release.zip
+        asset_content_type: application/zip
