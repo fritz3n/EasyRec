@@ -21,6 +21,7 @@ jobs:
     - name: Create release  
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{github.}}
+        tag: ${{github.run_number}}
+        draft: true 
         artifacts: "D:\release.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
