@@ -23,5 +23,5 @@ jobs:
       with:
         tag: ${{github.run_number}}
         draft: true 
-        artifacts: "D:\release.zip"
+        artifacts: "D:\\release.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
