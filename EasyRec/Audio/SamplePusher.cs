@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -7,9 +8,12 @@ namespace EasyRec.Audio
 {
 	class SamplePusher
 	{
+		private static ILog log = LogManager.GetLogger(nameof(SamplePusher));
 		private readonly IList<AudioStream> sources;
 		public IList<ISampleReceiver> Destinations { get; }
 		private Timer timer;
+		private int waiting = 0;
+		private SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1);
 		AudioFragment[] fragments = null;
 
 		int[] lengths;
@@ -52,17 +56,33 @@ namespace EasyRec.Audio
 
 		private void PushSamples(object state)
 		{
-			if (!Running)
-				return;
-
-			for (int i = 0; i < sources.Count; i++)
+			Interlocked.Increment(ref waiting);
+			if (waiting > 1)
 			{
-				fragments[i].Count = sources[i].WaveProvider.Read(fragments[i].AudioData, 0, lengths[i]);
+				log.Debug(waiting + " pushers waiting");
 			}
-
-			for (int i = 0; i < Destinations.Count; i++)
+			semaphoreSlim.Wait();
+			Interlocked.Decrement(ref waiting);
+			try
 			{
-				Destinations[i].ReceiveSamples(fragments);
+				if (!Running)
+					return;
+
+				for (int i = 0; i < sources.Count; i++)
+				{
+					fragments[i].Count = sources[i].WaveProvider.Read(fragments[i].AudioData, 0, lengths[i]);
+					if (fragments[i].Count == 0)
+						log.Warn($"Read 0 samples from {sources[i].Name}");
+				}
+
+				for (int i = 0; i < Destinations.Count; i++)
+				{
+					Destinations[i].ReceiveSamples(fragments);
+				}
+			}
+			finally
+			{
+				semaphoreSlim.Release();
 			}
 		}
 	}

@@ -12,6 +12,8 @@ namespace EasyRec.Audio.FileWriters
 	{
 		public Mp3FileWriter(string path, ThroughputDescription description) : base(path, description) { }
 
+		protected override bool IncrementalWrite => true;
+
 		protected override MediaType GetMediaType(WaveFormat waveFormat) => MediaFoundationEncoder.SelectMediaType(
 					AudioSubtypes.MFAudioFormat_MP3,
 					waveFormat,

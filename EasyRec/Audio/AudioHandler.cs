@@ -1,6 +1,7 @@
 using EasyRec.Audio.Buffer;
 using EasyRec.Audio.FileWriters;
 using EasyRec.Configuration;
+using log4net;
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace EasyRec.Audio
 {
 	class AudioHandler : IDisposable
 	{
+		private static ILog log = LogManager.GetLogger(nameof(AudioHandler));
 		private WasapiProvider[] inputs;
 		private SampleBuffer buffer;
 		private FileWriter recorder;
@@ -40,6 +42,8 @@ namespace EasyRec.Audio
 			StopRecording();
 			StopBuffer();
 			Deactivate();
+
+			log.Info("Starting audio");
 
 			Config config = ConfigHandler.Config;
 
@@ -67,6 +71,11 @@ namespace EasyRec.Audio
 
 			inputs = inputList.ToArray();
 
+			log.Info("Inputs:\n\t" + string.Join("\n\t", inputs.Select(i =>
+			{
+				return $"{i.Name} - {i.WaveFormat.ToStringBetter()}";
+			})));
+
 			var targetFormat = new WaveFormat(config.SampleRate, config.Bits, 2);
 
 			var converter = new WaveConverter(inputs.Select(i => i.AudioStream), targetFormat);
@@ -76,6 +85,12 @@ namespace EasyRec.Audio
 				streams = converter.AudioStreams;
 			else
 				streams = (mixdown = new WaveMixdown(converter.AudioStreams, config.MixdownType == MixdownType.Both)).AudioStreams;
+
+
+			log.Info("Streams:\n\t" + string.Join("\n\t", streams.Select(s =>
+			{
+				return $"{s.Name} - {s.WaveProvider.WaveFormat.ToStringBetter()}";
+			})));
 
 			description = ThroughputDescription.FromStreams(streams);
 			pusher = new SamplePusher(streams, new List<ISampleReceiver>());

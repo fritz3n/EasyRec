@@ -12,6 +12,8 @@ namespace EasyRec.Audio.FileWriters
 
 		}
 
+		protected override bool IncrementalWrite => false;
+
 		protected override WaveFileWriter GetEncoder(string path, WaveFormat waveFormat)
 		{
 			if (!path.EndsWith(".wav"))

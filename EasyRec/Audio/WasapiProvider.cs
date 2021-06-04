@@ -68,9 +68,9 @@ namespace EasyRec.Audio
 
 
 			if (bufferLatency == -1)
-				buffer = new BufferedWaveProvider(capture.WaveFormat);
+				buffer = new BufferedWaveProvider(capture.WaveFormat) { DiscardOnBufferOverflow = true };
 			else
-				buffer = new BufferedWaveProvider(capture.WaveFormat) { BufferDuration = TimeSpan.FromMilliseconds(bufferLatency) };
+				buffer = new BufferedWaveProvider(capture.WaveFormat) { DiscardOnBufferOverflow = true, BufferDuration = TimeSpan.FromMilliseconds(bufferLatency) };
 
 			capture.DataAvailable += Capture_DataAvailable;
 		}

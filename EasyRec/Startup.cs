@@ -2,6 +2,10 @@ using EasyRec.Audio;
 using EasyRec.Configuration;
 using EasyRec.Gui;
 using EasyRec.Hotkeys;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
+using log4net.Layout;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -18,6 +22,8 @@ namespace EasyRec
 {
 	public class Startup : IDisposable
 	{
+		private static ILog log = LogManager.GetLogger(nameof(Startup));
+
 		NotifyIcon notifyIcon = new NotifyIcon();
 		private readonly MainWindow mainWindow;
 		AudioHandler audioHandler = new AudioHandler();
@@ -38,6 +44,12 @@ namespace EasyRec
 
 		public Startup(MainWindow mainWindow)
 		{
+			var f = new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location);
+
+			Directory.SetCurrentDirectory(f.Directory.FullName);
+
+			log.Info("Start");
+
 			this.mainWindow = mainWindow;
 
 			AppDomain currentDomain = AppDomain.CurrentDomain;
@@ -135,6 +147,8 @@ namespace EasyRec
 
 		public void SetBuffering(bool buffering, bool notify = false)
 		{
+			log.Info("Buffering set " + buffering);
+
 			if (buffering)
 				audioHandler.StartBuffer();
 			else
@@ -146,6 +160,8 @@ namespace EasyRec
 
 		public void SetRecording(bool recording, bool notify = false)
 		{
+			log.Info("Recording set " + recording);
+
 			if (recording)
 				audioHandler.StartRecording();
 			else
@@ -157,6 +173,8 @@ namespace EasyRec
 
 		public async Task SaveBuffer()
 		{
+			log.Info("Buffering");
+
 			notifyIcon.ShowBalloonTip(500, "Saving buffer..", "Buffer is being saved..", ToolTipIcon.Info);
 			TimeSpan saved = await audioHandler.SaveBuffer();
 			if (saved == TimeSpan.Zero)
@@ -202,6 +220,8 @@ namespace EasyRec
 			UpdateLabels(true);
 			if (!first)
 			{
+				log.Info("First Audiostart");
+
 				bool recording = audioHandler.Recording;
 				bool buffering = audioHandler.Buffering;
 				audioHandler.BuildPipeline();
@@ -211,6 +231,8 @@ namespace EasyRec
 			}
 			else
 			{
+				log.Info("Subsequent Audiostart");
+
 				if (Environment.GetCommandLineArgs().Length > 1 && Environment.GetCommandLineArgs()[1] == "autostart")
 					Thread.Sleep(30 * 1000); // Delay 30s to guarantee that everything will work
 

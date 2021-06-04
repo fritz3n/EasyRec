@@ -8,6 +8,7 @@ namespace EasyRec.Configuration
 	{
 		Aac,
 		Mp3,
-		Wav
+		Wav,
+		Mp3Lame
 	}
 }

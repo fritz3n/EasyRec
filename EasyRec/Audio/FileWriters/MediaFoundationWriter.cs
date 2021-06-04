@@ -13,6 +13,12 @@ namespace EasyRec.Audio.FileWriters
 {
 	class MediaFoundationWriter : Stream, IDisposable
 	{
+
+		static MediaFoundationWriter()
+		{
+			MediaFoundationApi.Startup();
+		}
+
 		/// <summary>
 		/// Queries the available bitrates for a given encoding output type, sample rate and number of channels
 		/// </summary>
@@ -53,11 +59,11 @@ namespace EasyRec.Audio.FileWriters
 				}
 			}
 			availableTypes.GetElementCount(out int count);
-			List<MediaType> mediaTypes = new List<MediaType>(count);
+			var mediaTypes = new List<MediaType>(count);
 			for (int n = 0; n < count; n++)
 			{
 				availableTypes.GetElement(n, out object mediaTypeObject);
-				IMFMediaType mediaType = (IMFMediaType)mediaTypeObject;
+				var mediaType = (IMFMediaType)mediaTypeObject;
 				mediaTypes.Add(new MediaType(mediaType));
 			}
 			Marshal.ReleaseComObject(availableTypes);

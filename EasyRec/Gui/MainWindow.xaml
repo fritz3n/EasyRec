@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:EasyRec.Gui.Controls"
         xmlns:local="clr-namespace:EasyRec.Gui"
         mc:Ignorable="d"
-        Title="MainWindow" Height="597" Width="800">
+        Title="EasyRec" Height="597" Width="800">
     <Grid>
         <TabControl>
             <TabItem Header="Controls" >

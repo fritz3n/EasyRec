@@ -58,7 +58,7 @@ namespace EasyRec.Audio.FileWriters
 				{
 					int signaled = WaitHandle.WaitAny(new WaitHandle[] { dataAvailableEvent, tokenSource.Token.WaitHandle });
 					if (signaled == 1)
-						throw new Exception();
+						break;
 					for (int i = 0; i < audioFragments.Count; i++)
 					{
 						if (audioFragments[i].Count > 0)
@@ -67,7 +67,6 @@ namespace EasyRec.Audio.FileWriters
 					dataProcessedEvent.Set();
 				}
 			}
-			catch (Exception e) { }
 			finally
 			{
 				for (int i = 0; i < encoders.Length; i++)

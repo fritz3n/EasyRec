@@ -50,7 +50,7 @@ namespace EasyRec.Gui.Controls
 			inputListBox.Items.Clear();
 			foreach (KeyValuePair<string, string> pair in WasapiGui.GetInputs())
 			{
-				CheckBox checkbox = new CheckBox()
+				var checkbox = new CheckBox()
 				{
 					Content = pair.Value,
 					Tag = pair.Key,
@@ -68,7 +68,7 @@ namespace EasyRec.Gui.Controls
 
 		private void NumberPreviewTextInput(object sender, TextCompositionEventArgs e)
 		{
-			Regex regex = new Regex(@"[^0-9]+(?:\.[^0-9]+)");
+			var regex = new Regex(@"[^0-9]+(?:\.[^0-9]+)");
 			e.Handled = regex.IsMatch(e.Text);
 		}
 
@@ -92,7 +92,7 @@ namespace EasyRec.Gui.Controls
 			if (criticalChange && (Startup.Buffering || Startup.Recording))
 			{
 				if (MessageBoxResult.Cancel ==
-					MessageBox.Show("A critical setting was changed. If you continue recording and the buffer will be stopped.",
+					MessageBox.Show("A critical setting was changed. If you continue recording and buffering will be stopped.",
 									"Critical change",
 									MessageBoxButton.OKCancel,
 									MessageBoxImage.Warning))
@@ -103,7 +103,7 @@ namespace EasyRec.Gui.Controls
 			else if (recordChange && Startup.Recording)
 			{
 				if (MessageBoxResult.Cancel ==
-				MessageBox.Show("You changed settings concerning recording. If you continue recording will bes stopped.",
+				MessageBox.Show("You changed settings concerning recording. If you continue recording will be stopped.",
 								"Recording settings changed",
 								MessageBoxButton.OKCancel,
 								MessageBoxImage.Warning))
@@ -113,7 +113,7 @@ namespace EasyRec.Gui.Controls
 			}
 
 
-			Config conf = new Config()
+			var conf = new Config()
 			{
 				BufferPath = bufferPath.Text,
 				BufferPattern = bufferPattern.Text,

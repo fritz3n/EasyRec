@@ -60,6 +60,7 @@ namespace EasyRec.Audio.FileWriters
 
 	abstract class FileWriter : ISampleReceiver, IDisposable
 	{
+		protected abstract bool IncrementalWrite { get; }
 		public TimeSpan RecordedTime { get; set; } = new TimeSpan();
 		public void ReceiveSamples(IList<AudioFragment> audioFragments)
 		{
@@ -70,39 +71,46 @@ namespace EasyRec.Audio.FileWriters
 		public async Task WriteIncremental(IList<AudioFragment> audioFragments) =>
 			await Task.Run(() =>
 			{
-				byte[][] buffers = new byte[audioFragments.Count][];
-				int[] position = new int[audioFragments.Count];
-				AudioFragment[] fragments = new AudioFragment[audioFragments.Count];
-
-				for (int i = 0; i < audioFragments.Count; i++)
+				if (IncrementalWrite)
 				{
-					buffers[i] = new byte[audioFragments[i].StreamDescription.WaveFormat.AverageBytesPerSecond];
-					fragments[i] = new AudioFragment(audioFragments[i].StreamDescription, buffers[i], 0);
-				}
-				bool dataLeft = false;
+					byte[][] buffers = new byte[audioFragments.Count][];
+					int[] position = new int[audioFragments.Count];
+					var fragments = new AudioFragment[audioFragments.Count];
 
-				while (true)
-				{
-					dataLeft = false;
 					for (int i = 0; i < audioFragments.Count; i++)
 					{
-						int read = Math.Min(audioFragments[i].Count - position[i], audioFragments[i].StreamDescription.WaveFormat.AverageBytesPerSecond);
-						if (read > 0)
-						{
-							dataLeft = true;
-							Array.Copy(audioFragments[i].AudioData, position[i], buffers[i], 0, read);
-							fragments[i].Count = read;
-							position[i] += read;
-						}
-						else
-						{
-							fragments[i].Count = 0;
-						}
+						buffers[i] = new byte[audioFragments[i].StreamDescription.WaveFormat.AverageBytesPerSecond];
+						fragments[i] = new AudioFragment(audioFragments[i].StreamDescription, buffers[i], 0);
 					}
-					if (dataLeft)
-						ReceiveSamples(fragments);
-					else
-						break;
+					bool dataLeft = false;
+
+					while (true)
+					{
+						dataLeft = false;
+						for (int i = 0; i < audioFragments.Count; i++)
+						{
+							int read = Math.Min(audioFragments[i].Count - position[i], audioFragments[i].StreamDescription.WaveFormat.AverageBytesPerSecond);
+							if (read > 0)
+							{
+								dataLeft = true;
+								Array.Copy(audioFragments[i].AudioData, position[i], buffers[i], 0, read);
+								fragments[i].Count = read;
+								position[i] += read;
+							}
+							else
+							{
+								fragments[i].Count = 0;
+							}
+						}
+						if (dataLeft)
+							ReceiveSamples(fragments);
+						else
+							break;
+					}
+				}
+				else
+				{
+					ReceiveSamples(audioFragments);
 				}
 			});
 
@@ -114,6 +122,7 @@ namespace EasyRec.Audio.FileWriters
 			FileWriterType.Aac => new AacFileWriter(path, description),
 			FileWriterType.Mp3 => new Mp3FileWriter(path, description),
 			FileWriterType.Wav => new WavFileWriter(path, description),
+			FileWriterType.Mp3Lame => new Mp3LameFileWriter(path, description),
 		};
 	}
 }

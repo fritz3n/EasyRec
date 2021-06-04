@@ -33,6 +33,7 @@
                         <ComboBoxItem Tag="0" Content="AAC"/>
                         <ComboBoxItem Tag="1" Content="MP3"/>
                         <ComboBoxItem Tag="2" Content="WAV"/>
+                        <ComboBoxItem Tag="3" Content="MP3LAME (experimental)"/>
                     </ComboBox>
                 </StackPanel>
             </GroupBox>
@@ -49,6 +50,7 @@
                         <ComboBoxItem Tag="0" Content="AAC"/>
                         <ComboBoxItem Tag="1" Content="MP3"/>
                         <ComboBoxItem Tag="2" Content="WAV"/>
+                        <ComboBoxItem Tag="3" Content="MP3LAME (experimental)"/>
                     </ComboBox>
                 </StackPanel>
             </GroupBox>

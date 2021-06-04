@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using log4net;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System;
 using System.Collections.Generic;
@@ -11,17 +12,22 @@ namespace EasyRec.Audio.Conversion
 	class ConvertingWaveProvider : IWaveProvider, IDisposable
 	{
 		IWaveProvider provider;
+		private static ILog log = LogManager.GetLogger(nameof(ConvertingWaveProvider));
 		private MediaFoundationResampler resampler = null;
 
 		public ConvertingWaveProvider(IWaveProvider waveProvider, WaveFormat targetFormat, bool ignoreChannels = false)
 		{
+			int chain = 0;
+			log.Info($"New ConvertingWaveProvider for '{waveProvider}' from '{waveProvider.WaveFormat.ToStringBetter()}' to '{targetFormat.ToStringBetter()}'");
 
 			if (waveProvider.WaveFormat.SampleRate != targetFormat.SampleRate)
 			{
+				chain++;
+				log.Info($"-> using MediaFoundationResampler");
 				if (waveProvider.WaveFormat.Encoding == WaveFormatEncoding.IeeeFloat)
-					provider = resampler = new MediaFoundationResampler(waveProvider, targetFormat);
+					provider = new WrappedProvider(resampler = new MediaFoundationResampler(waveProvider, targetFormat));
 				else
-					provider = resampler = new MediaFoundationResampler(new Wave16ToFloatProvider(waveProvider), targetFormat);
+					provider = new WrappedProvider(resampler = new MediaFoundationResampler(new Wave16ToFloatProvider(waveProvider), targetFormat));
 			}
 			else
 			{
@@ -30,6 +36,7 @@ namespace EasyRec.Audio.Conversion
 
 			if (provider.WaveFormat.Encoding != targetFormat.Encoding)
 			{
+				chain++;
 				provider = (provider.WaveFormat.Encoding, targetFormat.Encoding) switch
 				{
 					(WaveFormatEncoding.Pcm, WaveFormatEncoding.IeeeFloat) => provider.ToSampleProvider().ToWaveProvider(),
@@ -41,11 +48,13 @@ namespace EasyRec.Audio.Conversion
 
 			if (provider.WaveFormat.Encoding == WaveFormatEncoding.Pcm && provider.WaveFormat.BitsPerSample != targetFormat.BitsPerSample)
 			{
+				chain++;
 				provider = new PCMConversionWaveProvider(provider.ToSampleProvider(), targetFormat.BitsPerSample / 8);
 			}
 
 			if (!ignoreChannels && provider.WaveFormat.Channels != targetFormat.Channels)
 			{
+				chain++;
 				if (targetFormat.Channels == 1 & provider.WaveFormat.Channels == 2)
 					provider = new StereoToMonoProvider16(provider);
 				else if (targetFormat.Channels == 2)
@@ -53,6 +62,7 @@ namespace EasyRec.Audio.Conversion
 				else
 					throw new InvalidWaveFormatException($"Couldn´t find a suitable conversion from {provider.WaveFormat.Channels} to {targetFormat.Channels} Channels");
 			}
+			log.Info($"-> Conversion successfull using {chain} links");
 		}
 
 		public WaveFormat WaveFormat => provider.WaveFormat;

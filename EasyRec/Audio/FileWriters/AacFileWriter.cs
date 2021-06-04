@@ -10,6 +10,8 @@ namespace EasyRec.Audio.FileWriters
 	{
 		public AacFileWriter(string path, ThroughputDescription description) : base(path, description) { }
 
+		protected override bool IncrementalWrite => true;
+
 		protected override MediaType GetMediaType(WaveFormat waveFormat) => MediaFoundationEncoder.SelectMediaType(
 					AudioSubtypes.MFAudioFormat_AAC,
 					waveFormat,
